@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<title>Руль и разум — MVP</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--accent:#5b5ce2;--good:#159a68;--warn:#e59b13;--bad:#d94b4b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Arial,sans-serif;color:var(--text)}
+.app{max-width:430px;margin:auto;min-height:100vh;padding:22px 18px 90px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.logo{font-weight:800;font-size:21px}.logo span{color:var(--accent)}
+.status{font-size:12px;color:var(--good);background:#e8f7f1;padding:7px 10px;border-radius:20px}
+.card{background:var(--card);border-radius:22px;padding:20px;margin:12px 0;box-shadow:0 8px 30px #17203310}
+.hero{background:linear-gradient(135deg,#20234b,#5b5ce2);color:white}
+.hero h1{font-size:27px;margin:0 0 8px}.hero p{margin:0;color:#dfe1ff;line-height:1.45}
+button{border:0;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{background:white;color:#3f40aa;margin-top:18px;width:100%}
+.secondary{background:#eef0ff;color:#4c4dc4;width:100%}
+h2{font-size:17px;margin:0 0 15px}.muted{color:var(--muted);font-size:13px}
+.score{display:flex;align-items:center;gap:18px}.circle{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--good) 0 72%,#e9edf2 72%);position:relative}.circle:after{content:"";position:absolute;width:72px;height:72px;background:white;border-radius:50%}.circle b{position:relative;z-index:1;font-size:25px}.metric{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.metric div{background:#f7f8fb;padding:12px;border-radius:14px}.metric b{display:block;font-size:18px;margin-top:4px}
+.tip{background:#fff8e8;border-left:4px solid var(--warn);padding:13px;border-radius:12px;line-height:1.4;font-size:13px}
+#trip{display:none}.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e8eaf0;display:flex;justify-content:center;gap:60px;padding:13px}.nav button{background:none;padding:5px;color:var(--muted)}.nav button.active{color:var(--accent)}
+.hidden{display:none!important}.pulse{animation:pulse 1.3s infinite}@keyframes pulse{50%{opacity:.55}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">Руль <span>&</span> разум</div><div class="status">● Система готова</div></header>
+
+<section id="home">
+<div class="card hero">
+<h1>Спокойствие за рулём</h1>
+<p>Помогаем замечать изменения в поведении водителя и вовремя снижать напряжение.</p>
+<button class="primary" onclick="startTrip()">Начать поездку</button>
+</div>
+
+<div class="card">
+<h2>Ваш индекс спокойствия</h2>
+<div class="score">
+<div class="circle"><b>72</b></div>
+<div><b>Хороший уровень</b><p class="muted">По данным последних поездок</p></div>
+</div>
+<div class="metric"><div><span class="muted">Поездок</span><b>12</b></div><div><span class="muted">Средняя оценка</span><b>76/100</b></div></div>
+</div>
+
+<div class="card">
+<h2>Рекомендация</h2>
+<div class="tip">Перед длительной поездкой сделайте несколько спокойных вдохов и убедитесь, что готовы сосредоточиться на дороге.</div>
+</div>
+</section>
+
+<section id="trip">
+<div class="card hero">
+<h1 id="tripTitle">Поездка началась</h1>
+<p id="tripStatus">Анализируем поведение в реальном времени…</p>
+<button class="primary" onclick="endTrip()">Завершить поездку</button>
+</div>
+<div class="card">
+<h2>Текущий индекс спокойствия</h2>
+<div class="score">
+<div class="circle" id="liveCircle"><b id="liveScore">82</b></div>
+<div><b id="liveLabel">Спокойное состояние</b><p class="muted">Данные являются оценкой поведения, а не медицинским диагнозом.</p></div>
+</div>
+<div class="metric">
+<div><span class="muted">Резкие торможения</span><b id="brakes">0</b></div>
+<div><span class="muted">Резкие ускорения</span><b id="accels">0</b></div>
+</div>
+</div>
+<div class="card">
+<h2>Помощник</h2><div class="tip" id="assistantTip">Сохраняйте плавный стиль вождения. Хорошей дороги!</div>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="card"><h2>История поездок</h2>
+<p>Сегодня · 42 мин · <b>78/100</b></p>
+<p>Вчера · 31 мин · <b>74/100</b></p>
+<p>15 сентября · 55 мин · <b>69/100</b></p>
+</div>
+<div class="card"><h2>Как это работает</h2><p class="muted">MVP использует данные о стиле движения для демонстрации концепции. Реальная версия может подключаться к датчикам смартфона и автомобиля.</p></div>
+</section>
+</div>
+
+<nav class="nav">
+<button class="active" onclick="show('home',this)">Главная</button>
+<button onclick="show('history',this)">История</button>
+</nav>
+
+<script>
+let timer, score=82, brakes=0, accels=0;
+function show(id,btn){
+  document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+}
+function startTrip(){
+  document.getElementById('home').style.display='none';
+  document.getElementById('trip').style.display='block';
+  score=82;brakes=0;accels=0; update();
+  timer=setInterval(()=>{
+    const event=Math.random();
+    if(event<.12){brakes++;score=Math.max(35,score-4)}
+    else if(event<.24){accels++;score=Math.max(35,score-3)}
+    else {score=Math.min(95,score+1)}
+    update();
+  },1200);
+}
+function update(){
+  document.getElementById('liveScore').textContent=score;
+  document.getElementById('brakes').textContent=brakes;
+  document.getElementById('accels').textContent=accels;
+  const label=document.getElementById('liveLabel'), tip=document.getElementById('assistantTip');
+  if(score>=75){label.textContent='Спокойное состояние';tip.textContent='Сохраняйте плавный стиль вождения. Хорошей дороги!';}
+  else if(score>=55){label.textContent='Повышенное напряжение';tip.textContent='Похоже, стиль вождения стал более резким. Снизьте темп и сделайте спокойный вдох.';}
+  else{label.textContent='Высокий уровень риска';tip.textContent='Если это безопасно, остановитесь в разрешённом месте и сделайте перерыв.';}
+}
+function endTrip(){
+  clearInterval(timer);
+  document.getElementById('trip').style.display='none';
+  document.getElementById('home').style.display='block';
+  alert('Поездка завершена. Ваш индекс спокойствия: '+score+'/100');
+}
+</script>
+</body>
+</html>
